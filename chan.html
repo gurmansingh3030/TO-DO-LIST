@@ -1,78 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TO DO APP</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TO DO APP</title>
 </head>
-
 <body>
+  <h1>TO DO LIST</h1>
+  <input type="text" id="taskInput" placeholder="Enter Task">
+  <button id="addBtn">Add Task</button>
+  <ul id="taskList"></ul>
 
-<h1>TO DO LIST</h1>
+  <script>
+    const button = document.getElementById("addBtn");
+    const input  = document.getElementById("taskInput");
+    const list   = document.getElementById("taskList");
 
-<input type="text" id="taskInput" placeholder="Enter Task">
-<button id="addBtn">Add Task</button>
-
-<ul id="taskList"></ul>
-
-<script>
-const button = document.getElementById("addBtn");
-const input = document.getElementById("taskInput");
-const list = document.getElementById("taskList");
-
-function savetasks(){
-    const tasks = [];
-    list.querySelectorAll("li").forEach(function(li) {
-        tasks.push(li.firstChild.textContent);
+    // FIX 5: Load saved tasks when page opens
+    window.addEventListener("load", function() {
+      const saved = JSON.parse(localStorage.getItem("myTasks") || "[]");
+      saved.forEach(function(taskText) {
+        addTaskToScreen(taskText);
+      });
     });
 
-    localStorage.setItem("myTasks", JSON.stringify(tasks));
+    // FIX 4: keydown listener registered once, at the top level
+    input.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        button.click();
+      }
+    });
 
-}
-
-
-button.addEventListener("click", function() {
-    const taskText = input.value.trim();
-
-    if(taskText === "") {
+    button.addEventListener("click", function() {
+      const taskText = input.value.trim();
+      if (taskText === "") {
         alert("ENTER YOUR TASK FIRST");
-        return; 
-    }
-
-    { alert("task added"); }
-    
-    
-     
-function addTaskToScreen(taskText){
-
-    const li = document.createElement("li");
-    li.textContent = taskText;
-
-    li.addEventListener("click", function() {
-        li.style.textDecoration = "line-through";
+        return;
+      }
+      addTaskToScreen(taskText);   // FIX 1: actually call the function
+      input.value = "";            // clear input after adding
+      saveTasks();                 // FIX 3: save after adding
     });
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "❌";
+    // FIX 2: function is properly closed and at the top level
+    function addTaskToScreen(taskText) {
+      const li = document.createElement("li");
+      li.textContent = taskText;
 
-    deleteBtn.addEventListener("click", function(event) {
+      li.addEventListener("click", function() {
+        li.style.textDecoration = "line-through";
+      });
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "❌";
+      deleteBtn.addEventListener("click", function(event) {
         event.stopPropagation();
         li.remove();
-    });
+        saveTasks();   // FIX 3: save after deleting too
+      });
 
-    li.appendChild(deleteBtn);
-    list.appendChild(li);
-    
-
-
-input.addEventListener("keydown", function(event) {
-    if(event.key === "Enter") {
-        button.click();
+      li.appendChild(deleteBtn);
+      list.appendChild(li);
     }
-});
 
-
-</script>
-
+    function saveTasks() {
+      const tasks = [];
+      list.querySelectorAll("li").forEach(function(li) {
+        tasks.push(li.firstChild.textContent);
+      });
+      localStorage.setItem("myTasks", JSON.stringify(tasks));
+    }
+  </script>
 </body>
 </html>
